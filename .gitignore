@@ -5,5 +5,7 @@
 *.dylib
 *.test
 *.out
-gesno
 go.work
+
+gesno
+infos/
