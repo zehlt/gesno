@@ -5,12 +5,12 @@ type Cpu struct {
 }
 
 func (c *Cpu) getNextByte(memory Memory) uint8 {
-	opcode := memory[c.ProgramCounter]
+	opcode := memory.readByte(uint16(c.ProgramCounter))
 	c.ProgramCounter++
 	return opcode
 }
 
-func (c *Cpu) ldaImmediate(memory Memory) {
+func (c *Cpu) ldaImm(memory Memory) {
 	operand := c.getNextByte(memory)
 	c.Accumulator = Register8(operand)
 
@@ -18,8 +18,14 @@ func (c *Cpu) ldaImmediate(memory Memory) {
 
 }
 
-func (c *Cpu) taxImplied() {
+func (c *Cpu) taxImp() {
 	c.XIndex = c.Accumulator
+
+	c.updateZeroAndNegativeFlags(c.XIndex)
+}
+
+func (c *Cpu) inxImp() {
+	c.XIndex += 1
 
 	c.updateZeroAndNegativeFlags(c.XIndex)
 }
@@ -41,9 +47,11 @@ func (c *Cpu) updateZeroAndNegativeFlags(value Register8) {
 func (c *Cpu) interpret(opcode uint8, memory Memory) bool {
 	switch opcode {
 	case LDA_IMM:
-		c.ldaImmediate(memory)
+		c.ldaImm(memory)
 	case TAX_IMP:
-		c.taxImplied()
+		c.taxImp()
+	case INX_IMP:
+		c.inxImp()
 	case BRK_IMP:
 		return true
 	default:
@@ -53,11 +61,21 @@ func (c *Cpu) interpret(opcode uint8, memory Memory) bool {
 	return false
 }
 
-func (c *Cpu) Run(memory Memory) {
+func (c *Cpu) Reset(mem Memory) {
 	c.Accumulator = 0
+	c.XIndex = 0
+	c.YIndex = 0
+	c.StackPointer = 0
+	c.Status = 0
 
+	c.ProgramCounter = Register16(mem.readWord(0xFFFC))
+}
+
+func (c *Cpu) Run(memory Memory) {
 	for {
-		opcode := c.getNextByte(memory)
+		opcode := memory.readByte(uint16(c.ProgramCounter))
+		c.ProgramCounter++
+
 		if c.interpret(opcode, memory) {
 			break
 		}

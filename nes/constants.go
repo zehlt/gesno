@@ -4,6 +4,7 @@ const (
 	BRK_IMP = 0x00
 	LDA_IMM = 0xA9
 	TAX_IMP = 0xAA
+	INX_IMP = 0xE8
 )
 
 const (

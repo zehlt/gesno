@@ -55,3 +55,5 @@ func TestLdaImmediateNegative(t *testing.T) {
 	assert(t, cpu.Status.Has(Zero))
 	assert(t, !cpu.Status.Has(Negative))
 }
+
+//func Test
