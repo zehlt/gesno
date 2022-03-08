@@ -1,7 +1,24 @@
 package nes
 
 const (
+	None = iota
+	Immediate
+	ZeroPage
+	ZeroPageX
+	Absolute
+	AbsoluteX
+	AbsoluteY
+	IndirectX
+	IndirectY
+)
+
+type Opcode struct {
+	int
+}
+
+const (
 	LDA_IMM = 0xA9
+	LDA_ZER = 0xA5
 	BRK_IMP = 0x00
 	TAX_IMP = 0xAA
 	INX_IMP = 0xE8

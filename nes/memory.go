@@ -43,10 +43,8 @@ func (m *Memory) writeWord(addr uint16, data uint16) {
 	m.writeByte(addr+1, hi)
 }
 
-/*
-func (m *Memory) loadBytes(addr uint16, data []uint8) {
+func (m *Memory) writeBytes(addr uint16, data []uint8) {
 	for index, value := range data {
-		m[addr+uint16(index)] = value
+		m.writeByte(addr+uint16(index), value)
 	}
 }
-*/

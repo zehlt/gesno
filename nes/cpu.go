@@ -1,15 +1,19 @@
 package nes
 
 type Cpu struct {
+	Cycle int
 	Registers
 }
 
+/*
 func (c *Cpu) getNextByte(memory Memory) uint8 {
 	opcode := memory.readByte(uint16(c.ProgramCounter))
 	c.ProgramCounter++
 	return opcode
 }
+*/
 
+/*
 func (c *Cpu) ldaImm(memory Memory) {
 	operand := c.getNextByte(memory)
 	c.Accumulator = Register8(operand)
@@ -29,6 +33,7 @@ func (c *Cpu) inxImp() {
 
 	c.updateZeroAndNegativeFlags(c.XIndex)
 }
+*/
 
 func (c *Cpu) updateZeroAndNegativeFlags(value Register8) {
 	if value == 0 {
@@ -44,15 +49,18 @@ func (c *Cpu) updateZeroAndNegativeFlags(value Register8) {
 	}
 }
 
-func (c *Cpu) interpret(opcode uint8, memory Memory) bool {
+func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	switch opcode {
 	case LDA_IMM:
 		c.ldaImm(memory)
+	case LDA_ZER:
+		c.ldaZer(memory)
 	case TAX_IMP:
-		c.taxImp()
+		// c.taxImp()
 	case INX_IMP:
-		c.inxImp()
+		// c.inxImp()
 	case BRK_IMP:
+		c.Cycle += 7
 		return true
 	default:
 		panic("Unknown opcode!")
@@ -61,17 +69,31 @@ func (c *Cpu) interpret(opcode uint8, memory Memory) bool {
 	return false
 }
 
-func (c *Cpu) Reset(mem Memory) {
+func (c *Cpu) ldaImm(mem *Memory) {
+	// lda immediate
+	data := mem.readByte(uint16(c.ProgramCounter))
+	c.ProgramCounter++
+	c.Accumulator = Register8(data)
+
+	c.updateZeroAndNegativeFlags(Register8(data))
+	c.Cycle += 2
+}
+
+func (c *Cpu) ldaZer(mem *Memory) {
+
+}
+
+func (c *Cpu) Reset(mem *Memory) {
 	c.Accumulator = 0
 	c.XIndex = 0
 	c.YIndex = 0
 	c.StackPointer = 0
 	c.Status = 0
 
-	//c.ProgramCounter = Register16(mem.readWord(0xFFFC))
+	c.ProgramCounter = Register16(mem.readWord(0xFFFC))
 }
 
-func (c *Cpu) Run(memory Memory) {
+func (c *Cpu) Run(memory *Memory) {
 	for {
 		opcode := memory.readByte(uint16(c.ProgramCounter))
 		c.ProgramCounter++

@@ -9,19 +9,19 @@ type Nes struct {
 
 func (n *Nes) reset() {
 	prgRom := []uint8{
-		LDA_IMM, 0x01, TAX_IMP, BRK_IMP,
+		LDA_IMM, 0x41, BRK_IMP, TAX_IMP, BRK_IMP,
 	}
-	fmt.Println(prgRom)
 
 	const prgStart = 0x8000
-	//n.mem.loadBytes(prgStart, prgRom)
-	//n.mem.writeWord(0xFFFC, prgStart)
+	n.mem.writeBytes(prgStart, prgRom)
+	n.mem.writeWord(0xFFFC, prgStart)
 
-	n.cpu.Reset(n.mem)
+	n.cpu.Reset(&n.mem)
 }
 
 func (n *Nes) Start() {
 	n.reset()
 
-	n.cpu.Run(n.mem)
+	n.cpu.Run(&n.mem)
+	fmt.Printf("%x\n", n.cpu.Accumulator)
 }

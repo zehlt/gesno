@@ -90,3 +90,20 @@ func TestWriteTwoWord(t *testing.T) {
 	asrt.Equal(t, mem[addr+1], uint8(0xDF))
 	asrt.Equal(t, mem[addr+2], uint8(0xEA))
 }
+
+// TODO: Probably test for overloading ?
+func TestWriteBytes(t *testing.T) {
+	mem := initSampleMemory()
+
+	var addr uint16 = 0xA3E4
+
+	want := []uint8{
+		0x01, 0x58, 0xCE, 0x9D,
+	}
+
+	mem.writeBytes(addr, want)
+
+	for i := 0; i < len(want); i++ {
+		asrt.Equal(t, mem[addr+(uint16(i))], want[i])
+	}
+}
