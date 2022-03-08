@@ -68,7 +68,7 @@ func (c *Cpu) Reset(mem Memory) {
 	c.StackPointer = 0
 	c.Status = 0
 
-	c.ProgramCounter = Register16(mem.readWord(0xFFFC))
+	//c.ProgramCounter = Register16(mem.readWord(0xFFFC))
 }
 
 func (c *Cpu) Run(memory Memory) {

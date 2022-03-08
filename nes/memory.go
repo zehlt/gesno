@@ -1,7 +1,5 @@
 package nes
 
-import "fmt"
-
 /*
 	CPU MEMORY MAP
 
@@ -24,7 +22,6 @@ import "fmt"
 type Memory [0xFFFF]uint8
 
 func (m *Memory) readByte(addr uint16) uint8 {
-	fmt.Printf("%02x ", m[addr])
 	return m[addr]
 }
 
@@ -46,8 +43,10 @@ func (m *Memory) writeWord(addr uint16, data uint16) {
 	m.writeByte(addr+1, hi)
 }
 
+/*
 func (m *Memory) loadBytes(addr uint16, data []uint8) {
 	for index, value := range data {
 		m[addr+uint16(index)] = value
 	}
 }
+*/
