@@ -49,6 +49,7 @@ func (c *Cpu) updateZeroAndNegativeFlags(value Register8) {
 	}
 }
 
+// TODO: add private func to clear this
 func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 	switch mode {
 	case Implied:
@@ -70,6 +71,10 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 	case AbsoluteX:
 		operandAddr := mem.readWord(uint16(c.ProgramCounter))
 		res := operandAddr + uint16(c.XIndex)
+		return res
+	case AbsoluteX1:
+		operandAddr := mem.readWord(uint16(c.ProgramCounter))
+		res := operandAddr + uint16(c.XIndex)
 		if (res >> 8) != (operandAddr >> 8) {
 			c.Cycle++
 		}
@@ -77,7 +82,10 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 	case AbsoluteY:
 		operandAddr := mem.readWord(uint16(c.ProgramCounter))
 		res := operandAddr + uint16(c.YIndex)
-		// TODO: Correct this for some operation
+		return res
+	case AbsoluteY1:
+		operandAddr := mem.readWord(uint16(c.ProgramCounter))
+		res := operandAddr + uint16(c.YIndex)
 		if (res >> 8) != (operandAddr >> 8) {
 			c.Cycle++
 		}
@@ -91,7 +99,11 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 		operand := mem.readByte(uint16(c.ProgramCounter))
 		word := mem.readWord(uint16(operand))
 		res := word + uint16(c.YIndex)
-		// TODO: Change there
+		return res
+	case IndirectY1:
+		operand := mem.readByte(uint16(c.ProgramCounter))
+		word := mem.readWord(uint16(operand))
+		res := word + uint16(c.YIndex)
 		if (res >> 8) != (word >> 8) {
 			c.Cycle++
 		}
@@ -119,6 +131,11 @@ func (c *Cpu) ldy(mem *Memory, mode int) {
 	c.updateZeroAndNegativeFlags(Register8(operand))
 }
 
+func (c *Cpu) sta(mem *Memory, mode int) {
+	addrToFill := c.getOperandAddress(mem, mode)
+	mem.writeByte(uint16(addrToFill), uint8(c.Accumulator))
+}
+
 func (c *Cpu) Reset(mem *Memory) {
 	c.Accumulator = 0
 	c.XIndex = 0
@@ -129,6 +146,7 @@ func (c *Cpu) Reset(mem *Memory) {
 	c.ProgramCounter = Register16(mem.readWord(0xFFFC))
 }
 
+// TODO: maybe add EACH by group string like "STA" "LDA"
 func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	opc := Opcodes[opcode]
 
@@ -139,10 +157,8 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 		c.ldx(memory, opc.Mode)
 	case LDY_IMM, LDY_ZER, LDY_ZRX, LDY_ABS, LDY_ABX:
 		c.ldy(memory, opc.Mode)
-	case TAX_IMP:
-		// c.taxImp()
-	case INX_IMP:
-		// c.inxImp()
+	case STA_ZER, STA_ZRX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY:
+		c.sta(memory, opc.Mode)
 	case BRK_IMP:
 		c.Cycle += 7
 		c.ProgramCounter += Register16(opc.ByteSize - 1)

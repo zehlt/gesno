@@ -731,7 +731,7 @@ func TestLdyAbsolutePositiveValue(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0x78))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -747,7 +747,7 @@ func TestLdyAbsoluteNegativeValue(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0xaf))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
 	asrt.True(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -763,7 +763,7 @@ func TestLdyAbsoluteZeroValue(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0x00))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.True(t, cpu.Status.Has(Zero))
 }
@@ -780,7 +780,7 @@ func TestLdyAbsoluteXPositiveValueNotCrossed(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0x78))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABX].Cycles+Opcodes[BRK_IMP].Cycles)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -797,7 +797,7 @@ func TestLdyAbsoluteXPositiveValueCrossed(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0x78))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABX].Cycles+Opcodes[BRK_IMP].Cycles+1)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -814,7 +814,109 @@ func TestLdyAbsoluteXPositiveValueCrossedAndZero(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.YIndex, Register8(0x00))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ABX].Cycles+Opcodes[BRK_IMP].Cycles+1)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.True(t, cpu.Status.Has(Zero))
+}
+
+func TestStaZeroPage(t *testing.T) {
+	memory := Memory{
+		STA_ZER, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xAA
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0x0050]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ZER].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaZeroPageX(t *testing.T) {
+	memory := Memory{
+		STA_ZRX, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x20
+	cpu.Accumulator = 0xFE
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0x0070]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaAbsolute(t *testing.T) {
+	memory := Memory{
+		STA_ABS, 0x50, 0xFA, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xBC
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xFA50]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaAbsoluteX(t *testing.T) {
+	memory := Memory{
+		STA_ABX, 0x50, 0xFA, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xBC
+	cpu.XIndex = 0x30
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xFA80]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ABX].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaAbsoluteY(t *testing.T) {
+	memory := Memory{
+		STA_ABY, 0x50, 0xFA, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xBC
+	cpu.YIndex = 0x30
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xFA80]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ABY].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaIndirectX(t *testing.T) {
+	memory := Memory{
+		STA_IDX, 0x20, BRK_IMP,
+	}
+
+	memory[0x0025] = 0x33
+	memory[0x0026] = 0xA7
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xBC
+	cpu.XIndex = 0x05
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xA733]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_IDX].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStaIndirectY(t *testing.T) {
+	memory := Memory{
+		STA_IDY, 0x20, BRK_IMP,
+	}
+
+	memory[0x0020] = 0x33
+	memory[0x0021] = 0xA7
+
+	cpu := Cpu{}
+	cpu.Accumulator = 0xBC
+	cpu.YIndex = 0x05
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xA738]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_IDY].Cycles+Opcodes[BRK_IMP].Cycles)
 }
