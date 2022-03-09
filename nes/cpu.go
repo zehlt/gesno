@@ -61,6 +61,10 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 		operandAddr := mem.readByte(uint16(c.ProgramCounter))
 		operandAddr += uint8(c.XIndex)
 		return uint16(operandAddr)
+	case ZeroPageY:
+		operandAddr := mem.readByte(uint16(c.ProgramCounter))
+		operandAddr += uint8(c.YIndex)
+		return uint16(operandAddr)
 	case Absolute:
 		return mem.readWord(uint16(c.ProgramCounter))
 	case AbsoluteX:
@@ -98,9 +102,15 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 }
 
 func (c *Cpu) lda(mem *Memory, mode int) {
-	operandValue := mem.readByte(c.getOperandAddress(mem, mode))
-	c.Accumulator = Register8(operandValue)
-	c.updateZeroAndNegativeFlags(Register8(operandValue))
+	operand := mem.readByte(c.getOperandAddress(mem, mode))
+	c.Accumulator = Register8(operand)
+	c.updateZeroAndNegativeFlags(Register8(operand))
+}
+
+func (c *Cpu) ldx(mem *Memory, mode int) {
+	operand := mem.readByte(c.getOperandAddress(mem, mode))
+	c.XIndex = Register8(operand)
+	c.updateZeroAndNegativeFlags(Register8(operand))
 }
 
 func (c *Cpu) Reset(mem *Memory) {
@@ -119,6 +129,10 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	switch opcode {
 	case LDA_IMM, LDA_ZER, LDA_ZRX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY:
 		c.lda(memory, opc.Mode)
+		c.Cycle += opc.Cycles
+		c.ProgramCounter += Register16(opc.ByteSize - 1)
+	case LDX_IMM, LDX_ZER, LDX_ZRY, LDX_ABS, LDX_ABY:
+		c.ldx(memory, opc.Mode)
 		c.Cycle += opc.Cycles
 		c.ProgramCounter += Register16(opc.ByteSize - 1)
 	case TAX_IMP:

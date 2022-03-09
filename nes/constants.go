@@ -5,6 +5,7 @@ const (
 	Immediate
 	ZeroPage
 	ZeroPageX
+	ZeroPageY
 	Absolute
 	AbsoluteX
 	AbsoluteY
@@ -21,6 +22,12 @@ const (
 	LDA_ABY = 0xB9
 	LDA_IDX = 0xA1
 	LDA_IDY = 0xB1
+
+	LDX_IMM = 0xA2
+	LDX_ZER = 0xA6
+	LDX_ZRY = 0xB6
+	LDX_ABS = 0xAE
+	LDX_ABY = 0xBE
 
 	BRK_IMP = 0x00
 	TAX_IMP = 0xAA
@@ -43,6 +50,12 @@ var Opcodes = map[uint8]Opcode{
 	LDA_ABY: {Code: LDA_ABY, ByteSize: 3, Cycles: 4 /*+1 crossed*/, Mode: AbsoluteY},
 	LDA_IDX: {Code: LDA_IDX, ByteSize: 2, Cycles: 6, Mode: IndirectX},
 	LDA_IDY: {Code: LDA_IDY, ByteSize: 2, Cycles: 5 /*+1 crossed*/, Mode: IndirectY},
+
+	LDX_IMM: {Code: LDX_IMM, ByteSize: 2, Cycles: 2, Mode: Immediate},
+	LDX_ZER: {Code: LDX_ZER, ByteSize: 2, Cycles: 3, Mode: ZeroPage},
+	LDX_ZRY: {Code: LDX_ZRY, ByteSize: 2, Cycles: 4, Mode: ZeroPageY},
+	LDX_ABS: {Code: LDX_ABS, ByteSize: 3, Cycles: 4, Mode: Absolute},
+	LDX_ABY: {Code: LDX_ABY, ByteSize: 3, Cycles: 4 /*+1 crossed*/, Mode: AbsoluteY},
 
 	BRK_IMP: {Code: BRK_IMP, ByteSize: 1, Cycles: 7, Mode: Implied},
 }
