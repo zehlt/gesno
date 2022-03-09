@@ -1,7 +1,7 @@
 package nes
 
 const (
-	None = iota
+	Implied = iota
 	Immediate
 	ZeroPage
 	ZeroPageX
@@ -13,7 +13,10 @@ const (
 )
 
 type Opcode struct {
-	int
+	Code     uint8
+	ByteSize int
+	Cycles   int
+	Mode     int
 }
 
 const (

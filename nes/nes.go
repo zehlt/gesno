@@ -1,7 +1,5 @@
 package nes
 
-import "fmt"
-
 type Nes struct {
 	cpu Cpu
 	mem Memory
@@ -23,5 +21,4 @@ func (n *Nes) Start() {
 	n.reset()
 
 	n.cpu.Run(&n.mem)
-	fmt.Printf("%x\n", n.cpu.Accumulator)
 }

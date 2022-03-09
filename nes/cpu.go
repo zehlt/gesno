@@ -5,6 +5,13 @@ type Cpu struct {
 	Registers
 }
 
+var Opcodes = map[uint8]Opcode{
+	LDA_IMM: {Code: LDA_IMM, ByteSize: 2, Cycles: 2, Mode: Immediate},
+	LDA_ZER: {Code: LDA_ZER, ByteSize: 2, Cycles: 3, Mode: ZeroPage},
+
+	BRK_IMP: {Code: BRK_IMP, ByteSize: 1, Cycles: 7, Mode: Implied},
+}
+
 /*
 func (c *Cpu) getNextByte(memory Memory) uint8 {
 	opcode := memory.readByte(uint16(c.ProgramCounter))
@@ -49,38 +56,23 @@ func (c *Cpu) updateZeroAndNegativeFlags(value Register8) {
 	}
 }
 
-func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
-	switch opcode {
-	case LDA_IMM:
-		c.ldaImm(memory)
-	case LDA_ZER:
-		c.ldaZer(memory)
-	case TAX_IMP:
-		// c.taxImp()
-	case INX_IMP:
-		// c.inxImp()
-	case BRK_IMP:
-		c.Cycle += 7
-		return true
+func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
+	switch mode {
+	case Implied:
+		panic("Implied mode not supported")
+	case Immediate:
+		return uint16(c.ProgramCounter)
+	case ZeroPage:
+		return uint16(mem.readByte(uint16(c.ProgramCounter)))
 	default:
-		panic("Unknown opcode!")
+		panic("Addressing mode not implemented")
 	}
-
-	return false
 }
 
-func (c *Cpu) ldaImm(mem *Memory) {
-	// lda immediate
-	data := mem.readByte(uint16(c.ProgramCounter))
-	c.ProgramCounter++
-	c.Accumulator = Register8(data)
-
-	c.updateZeroAndNegativeFlags(Register8(data))
-	c.Cycle += 2
-}
-
-func (c *Cpu) ldaZer(mem *Memory) {
-
+func (c *Cpu) lda(mem *Memory, mode int) {
+	operand := mem.readByte(c.getOperandAddress(mem, mode))
+	c.Accumulator = Register8(operand)
+	c.updateZeroAndNegativeFlags(Register8(operand))
 }
 
 func (c *Cpu) Reset(mem *Memory) {
@@ -91,6 +83,29 @@ func (c *Cpu) Reset(mem *Memory) {
 	c.Status = 0
 
 	c.ProgramCounter = Register16(mem.readWord(0xFFFC))
+}
+
+func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
+	opc := Opcodes[opcode]
+
+	switch opcode {
+	case LDA_IMM, LDA_ZER:
+		c.lda(memory, opc.Mode)
+		c.Cycle += opc.Cycles
+		c.ProgramCounter += Register16(opc.ByteSize - 1)
+	case TAX_IMP:
+		// c.taxImp()
+	case INX_IMP:
+		// c.inxImp()
+	case BRK_IMP:
+		c.Cycle += 7
+		c.ProgramCounter += Register16(opc.ByteSize - 1)
+		return true
+	default:
+		panic("Unknown opcode!")
+	}
+
+	return false
 }
 
 func (c *Cpu) Run(memory *Memory) {
