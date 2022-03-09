@@ -136,6 +136,16 @@ func (c *Cpu) sta(mem *Memory, mode int) {
 	mem.writeByte(uint16(addrToFill), uint8(c.Accumulator))
 }
 
+func (c *Cpu) stx(mem *Memory, mode int) {
+	addrToFill := c.getOperandAddress(mem, mode)
+	mem.writeByte(uint16(addrToFill), uint8(c.XIndex))
+}
+
+func (c *Cpu) sty(mem *Memory, mode int) {
+	addrToFill := c.getOperandAddress(mem, mode)
+	mem.writeByte(uint16(addrToFill), uint8(c.YIndex))
+}
+
 func (c *Cpu) Reset(mem *Memory) {
 	c.Accumulator = 0
 	c.XIndex = 0
@@ -159,6 +169,10 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 		c.ldy(memory, opc.Mode)
 	case STA_ZER, STA_ZRX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY:
 		c.sta(memory, opc.Mode)
+	case STX_ZER, STX_ZRY, STX_ABS:
+		c.stx(memory, opc.Mode)
+	case STY_ZER, STY_ZRX, STY_ABS:
+		c.sty(memory, opc.Mode)
 	case BRK_IMP:
 		c.Cycle += 7
 		c.ProgramCounter += Register16(opc.ByteSize - 1)

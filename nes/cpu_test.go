@@ -920,3 +920,83 @@ func TestStaIndirectY(t *testing.T) {
 	asrt.Equal(t, cpu.Accumulator, Register8(memory[0xA738]))
 	asrt.Equal(t, cpu.Cycle, Opcodes[STA_IDY].Cycles+Opcodes[BRK_IMP].Cycles)
 }
+
+func TestStxZeroPage(t *testing.T) {
+	memory := Memory{
+		STX_ZER, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.XIndex = 0xAA
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.XIndex, Register8(memory[0x50]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STX_ZER].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStxZeroPageY(t *testing.T) {
+	memory := Memory{
+		STX_ZRY, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x20
+	cpu.YIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.XIndex, Register8(memory[0x060]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STX_ZRY].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStxAbsolute(t *testing.T) {
+	memory := Memory{
+		STX_ABS, 0x50, 0xFA, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.XIndex = 0xBC
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.XIndex, Register8(memory[0xFA50]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STA_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStyZeroPage(t *testing.T) {
+	memory := Memory{
+		STY_ZER, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.YIndex = 0xAA
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(memory[0x50]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STY_ZER].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStyZeroPageX(t *testing.T) {
+	memory := Memory{
+		STY_ZRX, 0x50, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.YIndex = 0x20
+	cpu.XIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(memory[0x060]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+}
+
+func TestStyAbsolute(t *testing.T) {
+	memory := Memory{
+		STY_ABS, 0x50, 0xFA, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.YIndex = 0xBC
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(memory[0xFA50]))
+	asrt.Equal(t, cpu.Cycle, Opcodes[STY_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
+}

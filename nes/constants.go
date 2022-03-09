@@ -46,6 +46,14 @@ const (
 	STA_IDX = 0x81
 	STA_IDY = 0x91
 
+	STX_ZER = 0x86
+	STX_ZRY = 0x96
+	STX_ABS = 0x8E
+
+	STY_ZER = 0x84
+	STY_ZRX = 0x94
+	STY_ABS = 0x8C
+
 	BRK_IMP = 0x00
 	TAX_IMP = 0xAA
 	INX_IMP = 0xE8
@@ -87,6 +95,14 @@ var Opcodes = map[uint8]Opcode{
 	STA_ABY: {Code: STA_ABY, ByteSize: 3, Cycles: 5, Mode: AbsoluteY},
 	STA_IDX: {Code: STA_IDX, ByteSize: 2, Cycles: 6, Mode: IndirectX},
 	STA_IDY: {Code: STA_IDY, ByteSize: 2, Cycles: 6, Mode: IndirectY},
+
+	STX_ZER: {Code: STX_ZER, ByteSize: 2, Cycles: 3, Mode: ZeroPage},
+	STX_ZRY: {Code: STX_ZRY, ByteSize: 2, Cycles: 4, Mode: ZeroPageY},
+	STX_ABS: {Code: STX_ABS, ByteSize: 3, Cycles: 4, Mode: Absolute},
+
+	STY_ZER: {Code: STY_ZER, ByteSize: 2, Cycles: 3, Mode: ZeroPage},
+	STY_ZRX: {Code: STY_ZRX, ByteSize: 2, Cycles: 4, Mode: ZeroPageX},
+	STY_ABS: {Code: STY_ABS, ByteSize: 3, Cycles: 4, Mode: Absolute},
 
 	BRK_IMP: {Code: BRK_IMP, ByteSize: 1, Cycles: 7, Mode: Implied},
 }
