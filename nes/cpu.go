@@ -5,13 +5,6 @@ type Cpu struct {
 	Registers
 }
 
-var Opcodes = map[uint8]Opcode{
-	LDA_IMM: {Code: LDA_IMM, ByteSize: 2, Cycles: 2, Mode: Immediate},
-	LDA_ZER: {Code: LDA_ZER, ByteSize: 2, Cycles: 3, Mode: ZeroPage},
-
-	BRK_IMP: {Code: BRK_IMP, ByteSize: 1, Cycles: 7, Mode: Implied},
-}
-
 /*
 func (c *Cpu) getNextByte(memory Memory) uint8 {
 	opcode := memory.readByte(uint16(c.ProgramCounter))
@@ -64,15 +57,50 @@ func (c *Cpu) getOperandAddress(mem *Memory, mode int) uint16 {
 		return uint16(c.ProgramCounter)
 	case ZeroPage:
 		return uint16(mem.readByte(uint16(c.ProgramCounter)))
+	case ZeroPageX:
+		operandAddr := mem.readByte(uint16(c.ProgramCounter))
+		operandAddr += uint8(c.XIndex)
+		return uint16(operandAddr)
+	case Absolute:
+		return mem.readWord(uint16(c.ProgramCounter))
+	case AbsoluteX:
+		operandAddr := mem.readWord(uint16(c.ProgramCounter))
+		res := operandAddr + uint16(c.XIndex)
+		if (res >> 8) != (operandAddr >> 8) {
+			c.Cycle++
+		}
+		return res
+	case AbsoluteY:
+		operandAddr := mem.readWord(uint16(c.ProgramCounter))
+		res := operandAddr + uint16(c.YIndex)
+		// TODO: Correct this for some operation
+		if (res >> 8) != (operandAddr >> 8) {
+			c.Cycle++
+		}
+		return res
+	case IndirectX:
+		operand := mem.readByte(uint16(c.ProgramCounter))
+		operand += uint8(c.XIndex)
+
+		return mem.readWord(uint16(operand))
+	case IndirectY:
+		operand := mem.readByte(uint16(c.ProgramCounter))
+		word := mem.readWord(uint16(operand))
+		res := word + uint16(c.YIndex)
+		// TODO: Change there
+		if (res >> 8) != (word >> 8) {
+			c.Cycle++
+		}
+		return res
 	default:
 		panic("Addressing mode not implemented")
 	}
 }
 
 func (c *Cpu) lda(mem *Memory, mode int) {
-	operand := mem.readByte(c.getOperandAddress(mem, mode))
-	c.Accumulator = Register8(operand)
-	c.updateZeroAndNegativeFlags(Register8(operand))
+	operandValue := mem.readByte(c.getOperandAddress(mem, mode))
+	c.Accumulator = Register8(operandValue)
+	c.updateZeroAndNegativeFlags(Register8(operandValue))
 }
 
 func (c *Cpu) Reset(mem *Memory) {
@@ -89,7 +117,7 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	opc := Opcodes[opcode]
 
 	switch opcode {
-	case LDA_IMM, LDA_ZER:
+	case LDA_IMM, LDA_ZER, LDA_ZRX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY:
 		c.lda(memory, opc.Mode)
 		c.Cycle += opc.Cycles
 		c.ProgramCounter += Register16(opc.ByteSize - 1)
