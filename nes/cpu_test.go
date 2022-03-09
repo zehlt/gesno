@@ -573,7 +573,7 @@ func TestLdxAbsoluteYPositiveValue(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.XIndex, Register8(0x35))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABS].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABY].Cycles+Opcodes[BRK_IMP].Cycles)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -590,7 +590,7 @@ func TestLdxAbsoluteYPositiveValueCrossedPage(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.XIndex, Register8(0x35))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABS].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABY].Cycles+Opcodes[BRK_IMP].Cycles+1)
 	asrt.False(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
 }
@@ -607,7 +607,214 @@ func TestLdxAbsoluteYPositiveValueCrossedPageAndNegative(t *testing.T) {
 	cpu.Run(&memory)
 
 	asrt.Equal(t, cpu.XIndex, Register8(0xCC))
-	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABS].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDX_ABY].Cycles+Opcodes[BRK_IMP].Cycles+1)
 	asrt.True(t, cpu.Status.Has(Negative))
 	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyImmediatePositiveValue(t *testing.T) {
+	memory := Memory{
+		LDY_IMM, 0x25, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x25))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_IMM].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyImmediateNegativeValue(t *testing.T) {
+	memory := Memory{
+		LDY_IMM, 0xBE, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0xBE))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_IMM].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.True(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyImmediateZeroValue(t *testing.T) {
+	memory := Memory{
+		LDY_IMM, 0x00, BRK_IMP,
+	}
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x00))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_IMM].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.True(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyZeroPagePositiveValue(t *testing.T) {
+	memory := Memory{
+		LDY_ZER, 0x45, BRK_IMP,
+	}
+
+	memory[0x0045] = 0x63
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x63))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZER].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyZeroPageZeroValue(t *testing.T) {
+	memory := Memory{
+		LDY_ZER, 0x45, BRK_IMP,
+	}
+
+	memory[0x0045] = 0x00
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x00))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZER].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.True(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyZeroPageXPositiveValue(t *testing.T) {
+	memory := Memory{
+		LDY_ZRX, 0x45, BRK_IMP,
+	}
+
+	memory[0x0055] = 0x22
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x22))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyZeroPageXNegativeValue(t *testing.T) {
+	memory := Memory{
+		LDY_ZRX, 0x45, BRK_IMP,
+	}
+
+	memory[0x0055] = 0xF3
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0xF3))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.True(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsolutePositiveValue(t *testing.T) {
+	memory := Memory{
+		LDY_ABS, 0xa5, 0x2f, BRK_IMP,
+	}
+
+	memory[0x2fa5] = 0x78
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x78))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsoluteNegativeValue(t *testing.T) {
+	memory := Memory{
+		LDY_ABS, 0xa5, 0x2f, BRK_IMP,
+	}
+
+	memory[0x2fa5] = 0xaf
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0xaf))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.True(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsoluteZeroValue(t *testing.T) {
+	memory := Memory{
+		LDY_ABS, 0xa5, 0x2f, BRK_IMP,
+	}
+
+	memory[0x2fa5] = 0x00
+
+	cpu := Cpu{}
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x00))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.True(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsoluteXPositiveValueNotCrossed(t *testing.T) {
+	memory := Memory{
+		LDY_ABX, 0x50, 0x2f, BRK_IMP,
+	}
+
+	memory[0x2f70] = 0x78
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x20
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x78))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsoluteXPositiveValueCrossed(t *testing.T) {
+	memory := Memory{
+		LDY_ABX, 0xff, 0x2f, BRK_IMP,
+	}
+
+	memory[0x300f] = 0x78
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x78))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.False(t, cpu.Status.Has(Zero))
+}
+
+func TestLdyAbsoluteXPositiveValueCrossedAndZero(t *testing.T) {
+	memory := Memory{
+		LDY_ABX, 0xff, 0x2f, BRK_IMP,
+	}
+
+	memory[0x300f] = 0x00
+
+	cpu := Cpu{}
+	cpu.XIndex = 0x10
+	cpu.Run(&memory)
+
+	asrt.Equal(t, cpu.YIndex, Register8(0x00))
+	asrt.Equal(t, cpu.Cycle, Opcodes[LDY_ZRX].Cycles+Opcodes[BRK_IMP].Cycles+1)
+	asrt.False(t, cpu.Status.Has(Negative))
+	asrt.True(t, cpu.Status.Has(Zero))
 }

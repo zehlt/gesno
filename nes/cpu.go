@@ -113,6 +113,12 @@ func (c *Cpu) ldx(mem *Memory, mode int) {
 	c.updateZeroAndNegativeFlags(Register8(operand))
 }
 
+func (c *Cpu) ldy(mem *Memory, mode int) {
+	operand := mem.readByte(c.getOperandAddress(mem, mode))
+	c.YIndex = Register8(operand)
+	c.updateZeroAndNegativeFlags(Register8(operand))
+}
+
 func (c *Cpu) Reset(mem *Memory) {
 	c.Accumulator = 0
 	c.XIndex = 0
@@ -129,12 +135,10 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	switch opcode {
 	case LDA_IMM, LDA_ZER, LDA_ZRX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY:
 		c.lda(memory, opc.Mode)
-		c.Cycle += opc.Cycles
-		c.ProgramCounter += Register16(opc.ByteSize - 1)
 	case LDX_IMM, LDX_ZER, LDX_ZRY, LDX_ABS, LDX_ABY:
 		c.ldx(memory, opc.Mode)
-		c.Cycle += opc.Cycles
-		c.ProgramCounter += Register16(opc.ByteSize - 1)
+	case LDY_IMM, LDY_ZER, LDY_ZRX, LDY_ABS, LDY_ABX:
+		c.ldy(memory, opc.Mode)
 	case TAX_IMP:
 		// c.taxImp()
 	case INX_IMP:
@@ -146,6 +150,9 @@ func (c *Cpu) interpret(opcode uint8, memory *Memory) bool {
 	default:
 		panic("Unknown opcode!")
 	}
+
+	c.Cycle += opc.Cycles
+	c.ProgramCounter += Register16(opc.ByteSize - 1)
 
 	return false
 }
