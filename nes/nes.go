@@ -1,5 +1,6 @@
 package nes
 
+/*
 type Nes struct {
 	cpu Cpu
 	mem Memory
@@ -22,3 +23,5 @@ func (n *Nes) Start() {
 
 	n.cpu.Run(&n.mem)
 }
+
+*/

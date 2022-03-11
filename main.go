@@ -1,10 +1,9 @@
 package main
 
-import (
-	"github.com/zehlt/gesno/nes"
-)
+import "fmt"
 
 func main() {
-	n := nes.Nes{}
-	n.Start()
+	//	n := nes.Nes{}
+	//	n.Start()
+	fmt.Println("Ready for draw")
 }
