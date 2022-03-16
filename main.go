@@ -105,13 +105,13 @@ func main() {
 				if t.State == sdl.PRESSED {
 					switch t.Keysym.Sym {
 					case sdl.K_q:
-						mem.WriteByte(0xff, 0x61)
+						mem.Write(0xff, 0x61)
 					case sdl.K_d:
-						mem.WriteByte(0xff, 0x64)
+						mem.Write(0xff, 0x64)
 					case sdl.K_z:
-						mem.WriteByte(0xff, 0x77)
+						mem.Write(0xff, 0x77)
 					case sdl.K_s:
-						mem.WriteByte(0xff, 0x73)
+						mem.Write(0xff, 0x73)
 					}
 				}
 
@@ -120,7 +120,7 @@ func main() {
 				running = false
 			}
 		}
-		mem.WriteByte(0xfe, uint8(rand.Intn(15)+1))
+		mem.Write(0xfe, uint8(rand.Intn(15)+1))
 		//mem.WriteByte(0xff, 0x77)
 		// Update
 
@@ -133,7 +133,7 @@ func main() {
 
 		frameIdx := 0
 		for i := 0; i < 32*32; i++ {
-			color := mem.ReadByte(0x0200 + uint16(i))
+			color := mem.Read(0x0200 + uint16(i))
 			c1, c2, c3 := mapByteToColor(color)
 			screenState[frameIdx] = c1
 			screenState[frameIdx+1] = c2
@@ -144,13 +144,6 @@ func main() {
 		texture.Update(nil, screenState[:], 32*3)
 		renderer.Copy(texture, nil, nil)
 
-		// Draw
-
-		//renderer.Copy()
-
 		renderer.Present()
-
-		// sdl.PollEvent(
-		// sdl.Delay(500)
 	}
 }

@@ -1,27 +1,20 @@
 package nes
 
-/*
+import "github.com/zehlt/go6502"
+
 type Nes struct {
-	cpu Cpu
-	mem Memory
+	Cpu go6502.Cpu
+	Mem go6502.Mem
+	Bus NesBus
 }
 
-func (n *Nes) reset() {
-	prgRom := []uint8{
-		LDA_IMM, 0x41, BRK_IMP, TAX_IMP, BRK_IMP,
-	}
+func (n *Nes) Init() {
+	n.Bus.m = &n.Mem
+}
 
-	const prgStart = 0x8000
-	n.mem.writeBytes(prgStart, prgRom)
-	n.mem.writeWord(0xFFFC, prgStart)
+func (n *Nes) Load() {
 
-	n.cpu.Reset(&n.mem)
 }
 
 func (n *Nes) Start() {
-	n.reset()
-
-	n.cpu.Run(&n.mem)
 }
-
-*/
